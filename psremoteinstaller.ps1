@@ -12,7 +12,7 @@ $installCommand = "$RemoteInstallerPath /VERYSILENT /NORESTART"
 # Prompt for credentials once
 $cred = Get-Credential
 
-# Function to install App on a remote computer
+# Function to install the App on a remote computer
 function Install-App {
     param (
         [string] $ComputerName,
@@ -39,7 +39,7 @@ function Install-App {
             # Copy the installer file to the remote computer
             Copy-Item -Path $LocalAppInstaller -Destination $RemoteInstallerPath -ToSession $session -Force
 
-            # Create a scheduled task on the remote computer to install App
+            # Create a scheduled task on the remote computer to install the App
             $scriptBlock = {
                 param ($installCommand, $taskName, $RemoteInstallerPath)
 
@@ -62,6 +62,10 @@ function Install-App {
                 $folderPath = [System.IO.Path]::GetDirectoryName($RemoteInstallerPath)
                 Remove-Item -Path $folderPath -Recurse -Force
                 Write-Host "Temp folder removed on $ComputerName"
+
+                # Remove the scheduled task
+                Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+                Write-Host "Scheduled task $taskName removed from $ComputerName"
             }
 
             # Execute the command on the remote computer
@@ -78,7 +82,7 @@ function Install-App {
     }
 }
 
-# Iterate over all computers and install App
+# Iterate over all computers and install the App
 foreach ($computer in $computers) {
     Write-Host "Updating App on $computer"
     Install-App -ComputerName $computer -credential $cred
